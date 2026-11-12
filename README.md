@@ -12,6 +12,16 @@ A URL shortener built using **Python, FastAPI, and PostgreSQL**, featuring URL r
 - Browse recently shortened URLs.
 - Copy shortened URLs with one click.
 - Automated backend testing using Pytest.
+## Application Screenshots
+
+### Homepage
+![Linkly Homepage](screenshots/homepage.png)
+
+### URL Shortening
+![Shortened URL](screenshots/shortened-url.png)
+
+### Click Analytics
+![Click Analytics](screenshots/analytics.png)
 
 ## Tech Stack
 
