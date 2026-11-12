@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#10120f">
+    <meta name="description" content="Create clean, short links and track every click.">
+
+    <title>Linkly — Links, without the clutter.</title>
+
+    <!-- Distinctive typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="navbar">
+        <a href="/" class="brand" aria-label="Linkly home">
+            <span class="brand-mark">L</span>
+            <span>linkly<span class="brand-dot">.</span></span>
+        </a>
+
+        <div class="nav-right">
+            <span class="nav-status">
+                <span class="status-dot"></span>
+                ALL SYSTEMS OPERATIONAL
+            </span>
+            <span class="nav-label">URL WORKSPACE / 001</span>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <section class="hero">
+
+            <div class="eyebrow">
+                <span class="eyebrow-line"></span>
+                THE SMARTER WAY TO SHARE
+            </div>
+
+            <h1>
+                Less URL.<br>
+                <span class="headline-accent">More impact.</span>
+            </h1>
+
+            <p class="hero-description">
+                Long links are yesterday's problem.
+                Create clean, shareable links and keep an eye on every click.
+            </p>
+
+        </section>
+
+        <!-- URL shortening form -->
+        <section class="workspace">
+
+            <div class="section-label">
+                <span>01</span>
+                <span>CREATE A SHORT LINK</span>
+            </div>
+
+            <form id="shortenForm" class="shortener-form">
+
+                <label for="originalUrl">YOUR DESTINATION URL</label>
+
+                <div class="input-wrapper">
+                    <span class="input-icon" aria-hidden="true">↗</span>
+
+                    <input
+                        type="url"
+                        id="originalUrl"
+                        placeholder="https://your-very-long-url.com/..."
+                        autocomplete="url"
+                        required
+                    >
+
+                    <button type="submit" id="shortenButton">
+                        <span class="button-text">Shorten link</span>
+                        <span class="button-arrow">↗</span>
+                    </button>
+                </div>
+
+                <p class="input-hint">
+                    Paste any valid URL. We'll handle the rest.
+                </p>
+
+            </form>
+
+            <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+
+            <!-- Generated link -->
+            <section id="resultCard" class="result-card" hidden>
+
+                <div class="result-topline">
+                    <span class="result-indicator"></span>
+                    LINK GENERATED SUCCESSFULLY
+                </div>
+
+                <div class="result-content">
+                    <div class="result-link-area">
+                        <span class="result-label">YOUR SHORT LINK</span>
+                        <a id="shortUrl" href="#" target="_blank" rel="noopener noreferrer"></a>
+                    </div>
+
+                    <button id="copyButton" class="copy-button" type="button">
+                        <span id="copyButtonText">Copy link</span>
+                        <span aria-hidden="true">▣</span>
+                    </button>
+                </div>
+
+                <div class="result-divider"></div>
+
+                <div class="result-bottom">
+                    <div class="click-stat">
+                        <span class="stat-icon">↗</span>
+                        <div>
+                            <strong id="clickCount">—</strong>
+                            <span>Total clicks</span>
+                        </div>
+                    </div>
+
+                    <button id="analyticsButton" class="analytics-button" type="button">
+                        View analytics <span>→</span>
+                    </button>
+                </div>
+
+                <div id="analyticsPanel" class="analytics-panel" hidden>
+                    <div class="analytics-heading">CLICK ACTIVITY</div>
+                    <ul id="clickHistory" class="click-history"></ul>
+                </div>
+
+            </section>
+
+        </section>
+
+        <!-- Recently created links -->
+        <section id="recentSection" class="recent-section" hidden>
+
+            <div class="recent-heading">
+                <div class="section-label">
+                    <span>02</span>
+                    <span>RECENT LINKS</span>
+                </div>
+
+                <button id="clearHistoryButton" class="clear-button" type="button">
+                    Clear history
+                </button>
+            </div>
+
+            <div id="recentLinks" class="recent-list"></div>
+
+        </section>
+
+        <footer class="footer">
+            <span>BUILT FOR BETTER SHARING.</span>
+            <span>POWERED BY FASTAPI & POSTGRESQL.</span>
+        </footer>
+
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="/static/script.js"></script>
+
+</body>
+</html>
+
