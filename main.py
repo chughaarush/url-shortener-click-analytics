@@ -14,14 +14,9 @@ from dotenv import load_dotenv
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 load_dotenv()
+BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
 
-conn = psycopg2.connect(
-    host=os.getenv("DB_HOST"),
-    database=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    port=os.getenv("DB_PORT")
-)
+conn = psycopg2.connect(os.environ["DATABASE_URL"])
 
 print("Database connected successfully!")
 
@@ -68,7 +63,7 @@ def shorten_url(request: URLRequest):
         if result:
             break
 
-    short_url = f"http://127.0.0.1:8000/{short_code}"
+    short_url = f"{BASE_URL}/{short_code}"
 
     return {
         "original_url": str(request.url),
