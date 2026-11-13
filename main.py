@@ -1,43 +1,67 @@
 
-from fastapi import FastAPI, HTTPException
+
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, HttpUrl
-from datetime import datetime, timezone
 import secrets
 import string
 import psycopg2
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
+
+# Static frontend
 app.mount("/static", StaticFiles(directory="static"), name="static")
-load_dotenv()
+
 BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
 
-conn = psycopg2.connect(os.environ["DATABASE_URL"])
 
-print("Database connected successfully!")
+# PostgreSQL connection dependency
+def get_db_connection():
+    conn = None
 
-print("Database connected successfully!")
+    try:
+        conn = psycopg2.connect(
+            os.environ["DATABASE_URL"],
+            connect_timeout=10
+        )
 
-# Temporary storage for shortened URLs
-url_database = {}
-click_analytics= {} #to store the click analytics data
+        yield conn
+
+        conn.commit()
+
+    except Exception:
+        if conn is not None:
+            conn.rollback()
+        raise
+
+    finally:
+        if conn is not None:
+            conn.close()
+
 
 # Request format
 class URLRequest(BaseModel):
     url: HttpUrl
 
+
+# Home page
 @app.get("/")
 def home():
     return FileResponse("static/index.html")
 
 
+# Shorten URL
 @app.post("/shorten")
-def shorten_url(request: URLRequest):
-
+def shorten_url(
+    request: URLRequest,
+    conn=Depends(get_db_connection)
+):
     characters = string.ascii_letters + string.digits
 
     while True:
@@ -58,8 +82,6 @@ def shorten_url(request: URLRequest):
 
             result = cur.fetchone()
 
-        conn.commit()
-
         if result:
             break
 
@@ -72,19 +94,22 @@ def shorten_url(request: URLRequest):
     }
 
 
-
-
-
-
-
+# Redirect and record clicks
 @app.get("/{short_code}")
-def redirect_url(short_code: str):
-
+def redirect_url(
+    short_code: str,
+    conn=Depends(get_db_connection)
+):
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, original_url FROM urls WHERE short_code = %s",
+            """
+            SELECT id, original_url
+            FROM urls
+            WHERE short_code = %s
+            """,
             (short_code,)
         )
+
         result = cur.fetchone()
 
     if result is None:
@@ -95,34 +120,38 @@ def redirect_url(short_code: str):
 
     url_id, original_url = result
 
-    # Record the click in PostgreSQL
+    # Record click
     with conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO clicks (url_id) VALUES (%s)",
+            """
+            INSERT INTO clicks (url_id)
+            VALUES (%s)
+            """,
             (url_id,)
         )
-
-    conn.commit()
 
     return RedirectResponse(
         url=original_url,
         status_code=307
     )
 
-        
-    
 
-    
-
+# URL Analytics
 @app.get("/analytics/{short_code}")
-def get_analytics(short_code: str):
-
-    # Find the URL in PostgreSQL
+def get_analytics(
+    short_code: str,
+    conn=Depends(get_db_connection)
+):
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, original_url FROM urls WHERE short_code = %s",
+            """
+            SELECT id, original_url
+            FROM urls
+            WHERE short_code = %s
+            """,
             (short_code,)
         )
+
         result = cur.fetchone()
 
     if result is None:
@@ -133,21 +162,25 @@ def get_analytics(short_code: str):
 
     url_id, original_url = result
 
-    # Get all clicks for this URL
+    # Get click history
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT clicked_at FROM clicks WHERE url_id = %s ORDER BY clicked_at",
+            """
+            SELECT clicked_at
+            FROM clicks
+            WHERE url_id = %s
+            ORDER BY clicked_at
+            """,
             (url_id,)
         )
+
         clicks = cur.fetchall()
 
     return {
         "short_code": short_code,
         "original_url": original_url,
         "total_clicks": len(clicks),
-        "click_history": [click[0].isoformat() for click in clicks]
+        "click_history": [
+            click[0].isoformat() for click in clicks
+        ]
     }
-
-
-   
-
